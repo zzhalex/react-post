@@ -1,0 +1,206 @@
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <script type="text/babel">
+    class Add extends React.Component{
+            add = () =>{
+                //console.log("Add"+this.props.allAdd)
+                this.props.allAdd(this.lastname.value,this.firstname.value,this.address.value,this.city.value)
+                this.lastname.value=''
+                this.firstname.value=''
+                this.address.value=''
+                this.city.value=''
+              }
+
+            render(){
+                return(
+                    <div className="inputForm">
+                        <p>Lastname</p>
+                        <input type="text" className="form-control" ref={(lastname)=>{this.lastname = lastname}}/>
+                        <br />
+                        <p>Firstname</p>
+                        <input type="text" className="form-control" ref={(firstname)=>{this.firstname = firstname}}/>
+                        <br />
+                        <p>Address</p>
+                        <input type="text" className="form-control" ref={(address)=>{this.address = address}}/>
+                        <br />
+                        <p>City</p>
+                        <input type="text" className="form-control" ref={(city)=>{this.city = city}}/>
+                        <br />
+                        <button className="btn btn-primary" onClick = {this.add}>Add</button>
+                    </div>
+                )
+            }
+        }
+
+    class Item extends React.Component{
+          deleteItem = () =>{
+            // console.log("delete action")
+            // this.props.delete()
+            // console.log(this.props)
+            // console.log(this.props.index)
+            this.props.deleteItem(this.props.index,this.props.personid)
+          }
+
+          render(){
+            return (
+              <div className="col-md-4">
+                <div className='card'>
+                  <div className="card-body">
+                    <h5 className="card-title">{this.props.firstname},{this.props.lastname}</h5>
+                    <h6 className="card-subtitle mb-2 text-muted">{this.props.city}</h6>
+                    <p className="card-text">{this.props.address}</p>  
+                    <span onClick ={this.deleteItem} className="material-icons">delete_outline</span>        
+                  </div>
+                </div>
+              </div>
+            )
+          }
+        }
+
+    class List extends React.Component{
+
+            delete = (index,id) =>{
+              // console.log(this.props)
+              // console.log("delete extend"+id)
+              this.props.delete(index,id)
+            }
+
+            render(){
+              // console.log("render")
+
+              //  console.log(this.props)
+                return(
+                    <div className="row content">
+                        
+                            {
+                                this.props.list.map((v,i)=>{
+                                    return <Item key={i} index = {i} personid ={v.personid} lastname={v.lastname} firstname={v.firstname} address={v.address} city={v.city} deleteItem= {this.delete} />
+                                })
+                            }
+                        
+                    </div>
+                )
+            }
+        }
+
+    class App extends React.Component{
+            state = {
+                list:[]
+            }
+            add = (a,b,c,d) =>{
+
+                fetch('/add', {
+                    method: 'POST',
+                    headers: {
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      lastname: a,
+                      firstname: b,
+                      address:c,
+                      city:d
+                    })
+                  }).then(data=>{
+                     if(data.done==true){
+                      fetch("/person")
+                      .then(res => res.json())
+                      .then(
+                        (result) => {
+                          console.log("-2-")
+                          console.log(result)
+                          this.setState({
+                            list: result
+                          });
+                        },
+                      
+                        (error) => {
+                          this.setState({
+                            error
+                          });
+                        }
+                      )
+                     } 
+                  })
+               
+            }
+
+            componentDidMount() {
+              //console.log("did")
+              fetch("/person")
+                .then(res => res.json())
+                .then(
+                  (result) => {
+                    console.log("----")
+                    console.log(result)
+                    this.setState({
+                      list: result
+                    });
+                  },
+                
+                  (error) => {
+                    this.setState({
+                      error
+                    });
+                  }
+                )
+            }
+
+            deleteAction = (index,id) => {
+              //console.log("Top "+index)
+             
+              fetch('/removeperson', {
+                    method: 'delete',
+                    headers: {
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      id: id
+                    })
+                  }).then(data=>{
+                    console.log(data)
+                     if(data.ok==true){
+                      const {list} = this.state;
+                      console.log("======")
+                      console.log(this.state)
+                      console.log("======")
+                      console.log(list)
+                        list.splice(index, 1);
+                        this.setState({
+                                    list
+                                }) 
+                    
+                     } 
+                  })
+            }
+
+            render(){
+                
+                return(
+                    <div>
+                        <Add allAdd={this.add}/>
+                        <List list= {this.state.list} delete={this.deleteAction}/>
+                    </div>
+                )
+            }
+        }
+
+    ReactDOM.render(<App />, document.getElementById("root"))
+  </script>
+</body>
+
+</html>

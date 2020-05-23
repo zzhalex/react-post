@@ -1,0 +1,33 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.inputForm button{
+  width: 94px;
+}
+
+.inputForm input{
+  width: 200px;
+  height: 34px;
+}
+
+.card{
+  margin-top: 8px;
+}
+
+.content{
+  margin-top: 15px;;
+}
+
+.btn{
+  margin-top: 4px;
+}
+
+.material-icons{
+  cursor: pointer;
+}
